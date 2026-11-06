@@ -1,7 +1,27 @@
 from PPlay import scenemanager
 import assets
 from PPlay.physics import Physics
+from PPlay.object_group import ObjectGroup
+from PPlay import sprite
+from PPlay import mouse
+import time
 
+def calc_equacao():
+    rx,ry = mouse.Mouse.get_position(mouse.Mouse)
+    a = (ry-433)/(rx-98)
+    b = 433 - a*98
+    return a,b
+
+class Tiro(sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__("assets/tiro.png")
+        self.set_position(x, y)
+        self.velocidade_x = 0.5 
+        self.a , self.b = calc_equacao()
+    def update(self):
+        self.x += self.velocidade_x
+        self.y = self.a*self.x+self.b
+tiro = ObjectGroup()
 
 class Jogo(scenemanager.Scene):
     def __init__(self, janela, rato):
@@ -27,14 +47,10 @@ class Jogo(scenemanager.Scene):
 
         self.lista_solidos = [assets.chao]
 
-
-
-    def draw(self):
-        assets.fundo.draw()
-        assets.cowboy.draw()
-        assets.inimigo.draw()
-        assets.cacto1.draw()
-        assets.arma.draw()
+        self.cooldown = 0.7
+        self.ultimo_tiro=0
+        self.ultimo_powerup = 0
+        self.powerup_coletado = False
 
     def loop(self):
         from cenas.Menu import Menu
@@ -46,3 +62,31 @@ class Jogo(scenemanager.Scene):
             assets.cowboy.pular(900)
 
         assets.cowboy.update_physics(self.lista_solidos)
+
+        if self.janela.keyboard.key_down("down"):#TODO fazer o powerup ativar quando o player colidir com a arma
+            self.powerup_coletado= True
+            self.ultimo_powerup = time.time()
+
+        if abs(self.ultimo_powerup- time.time())>5:
+            self.powerup_coletado = False
+            self.cooldown = 0.7
+        if self.powerup_coletado == True:
+            self.cooldown = 0.35
+
+        if self.rato.button_pressed(1) and abs(time.time() - self.ultimo_tiro) > self.cooldown:
+            rx,ry = self.rato.get_position()
+            if rx> 150:
+                tiro.add(Tiro(98,433))
+                self.ultimo_tiro = time.time()
+        
+        for tir in tiro.get_all():
+            if tir.x>800 or tir.y<0:
+                tiro.remove(tir)
+    def draw(self):
+            assets.fundo.draw()
+            assets.cowboy.draw()
+            assets.inimigo.draw()
+            assets.cacto1.draw()
+            assets.arma.draw()
+            tiro.draw()
+            tiro.update()
