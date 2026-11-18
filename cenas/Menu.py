@@ -7,14 +7,20 @@ class Menu(scenemanager.Scene):
         super().__init__()
         self.janela = janela
         self.rato = rato
+        self.pode_clicar = False
 
     def loop(self):
         from cenas.Jogo import Jogo
+
+        if not self.pode_clicar:
+            self.pode_clicar = True
+            return
 
         if self.rato.is_over_object(assets.botao_sair) and self.rato.button_pressed(1):
             self.janela.close()
         if self.rato.is_over_object(assets.botao_jogar) and self.rato.button_pressed(1):
             scenemanager.SceneManager.change_scene(Jogo(self.janela, self.rato))
+            return
 
     def draw(self):
 

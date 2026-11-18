@@ -9,7 +9,6 @@ rato = PPlay.mouse.Mouse()
 
 assets.carregar()
 
-from cenas.Menu import Menu
 PPlay.scenemanager.SceneManager.change_scene(Menu(janela, rato))
 
 while True:
