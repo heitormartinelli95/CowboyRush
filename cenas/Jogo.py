@@ -59,12 +59,17 @@ class Jogo(scenemanager.Scene):
 
         self.motor = Physics(gravidade=1800)
         assets.cowboy.setup_physics(self.motor)
-        
-        self.cora = sprite.Sprite("assets/coracoes.png",3)
-        self.cora.set_curr_frame(0)
-        self.cora.set_position(self.janela.width - 170, 0)
-        self.cora_curr_frame = 0
-        
+        assets.cowboy.set_total_duration(100000000000000)
+
+        self.vida = 3
+        self.coracoes = []
+        for i in range(3):
+            c = sprite.Sprite("assets/coracoes.png",1)
+            c.set_total_duration(100000000000000)
+            c.set_curr_frame(0)
+            c.set_position(self.janela.width - (c.width + 8) * (i + 1) - 10, 5)
+            self.coracoes.append(c)
+
         cowboy_x = 20
         cowboy_y = self.janela.height - assets.cowboy.height - 50
         self.tiro_y = 0
@@ -72,20 +77,17 @@ class Jogo(scenemanager.Scene):
         self.cowboy_armado = sprite.Sprite("assets/arma.png")
         
         assets.cowboy.set_position(cowboy_x, cowboy_y)
-        
-
-
         assets.chao.set_position(0, cowboy_y + assets.cowboy.height)
 
         self.lista_solidos = [assets.chao]
-        self.cooldown = 0.7
+        self.cooldown = 0.5
         self.ultimo_tiro=0
         self.ultimo_powerup = 0
         self.powerup_coletado = False
         self.ultimo_spawn = 0
-        self.intervalo_spawn = 1.5
+        self.intervalo_spawn = 2.5
 
-        self.vida = 3
+
         self.score = 0
         self.ponto_base = 15
         self.str_score = ""
@@ -98,8 +100,8 @@ class Jogo(scenemanager.Scene):
         self.score += dt * self.ponto_base
         self.str_score = str(int(self.score))
 
-        self.fundo1.x -= self.velocidade_fundo * dt
-        self.fundo2.x -= self.velocidade_fundo * dt
+        self.fundo1.x -= (self.velocidade_fundo * dt)
+        self.fundo2.x -= (self.velocidade_fundo * dt)
 
         if self.fundo1.x <= -self.fundo1.width:
             self.fundo1.x = self.fundo2.x + self.fundo2.width
@@ -109,7 +111,7 @@ class Jogo(scenemanager.Scene):
         if self.janela.keyboard.key_pressed('ESC'):
             scenemanager.SceneManager.change_scene(Menu(self.janela, self.rato))
             return
-        assets.cowboy.set_total_duration(100000000000000)
+
         if (self.janela.keyboard.key_pressed('SPACE')) and (assets.cowboy.y == self.janela.height - assets.cowboy.height - 50):  
             assets.cowboy.pular(2200)
         if assets.cowboy.y > 400:
@@ -120,7 +122,7 @@ class Jogo(scenemanager.Scene):
             escolha = random.choices(["cacto", "cacto2", "inimigo", "arma"], weights = [8, 8, 3, 1], k=1)[0]
             obstaculos.add(Obstaculo(f"assets/{escolha}.png", 850, self.janela.height - assets.cowboy.height - 21, 300+(self.dificuldade/self.score), escolha))
             self.ultimo_spawn = time.time()
-            self.intervalo_spawn = max(0.6, self.intervalo_spawn - 0.02)
+            self.intervalo_spawn = max(0.8, self.intervalo_spawn - 0.05)
 
         for obs in list(obstaculos.get_all()):
             obs.update(dt)
@@ -135,8 +137,6 @@ class Jogo(scenemanager.Scene):
                     obstaculos.remove(obs)
                 if obs.tipo != "arma":
                     self.vida -= 1
-                    self.cora_curr_frame += 1
-                    self.cora.set_curr_frame(self.cora_curr_frame)
                     obstaculos.remove(obs)
 
         if self.vida == 0:
@@ -150,7 +150,7 @@ class Jogo(scenemanager.Scene):
             self.powerup_coletado = False
             self.cooldown = 0.7
         if self.powerup_coletado == True:
-            self.cooldown = 0.35
+            self.cooldown = 0.25
 
         if self.rato.button_pressed(1) and abs(time.time() - self.ultimo_tiro) > self.cooldown:
             rx,ry = self.rato.get_position()
@@ -181,6 +181,7 @@ class Jogo(scenemanager.Scene):
                 self.cowboy_armado.draw()
             obstaculos.draw()
             tiro.draw()
-            self.cora.draw()
+            for c in self.coracoes[:self.vida]:
+                c.draw()
             self.janela.draw_text(self.str_score, 0, 0, size = 36,color = (0,0,0), bold = True)
 
