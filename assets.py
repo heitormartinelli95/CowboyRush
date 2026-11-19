@@ -12,7 +12,7 @@ cowboy = arma = fundo  = None
 tiro = None   # vi tiro.png no seu ls, então adicionei
 
 def carregar():
-    global titulo, botao_jogar, botao_sair, botao_dificuldade, cowboy, inimigo, arma, fundo, cacto1, cacto2, tiro, chao, botao_rank, botao_facil, botao_dificil, botao_dificil
+    global titulo, botao_jogar, botao_sair, botao_dificuldade, cowboy, inimigo, arma, fundo, cacto1, cacto2, tiro, chao, botao_rank, botao_dif_facil, botao_dif_medio, botao_dif_dificil
 
     titulo = PPlay.gameimage.GameImage(_asset("titulo.png"))
     botao_jogar = PPlay.sprite.Sprite(_asset("jogar.png"))
@@ -21,7 +21,10 @@ def carregar():
     botao_rank = PPlay.sprite.Sprite(_asset("rank.png"))
     botao_facil = PPlay.sprite.Sprite(_asset("facil.png"))
     botao_dificil = PPlay.sprite.Sprite(_asset("dificil.png"))
-    cowboy = PPlay.sprite.Sprite(_asset("cowboy.png"))
+    cowboy = PPlay.sprite.Sprite("assets/cowboy.png",2)
     fundo = PPlay.gameimage.GameImage(_asset("fundo.png"))
     tiro = PPlay.sprite.Sprite(_asset("tiro.png"))
     chao = PPlay.sprite.Sprite(_asset("chao.png"))
+    botao_dif_facil =  PPlay.sprite.Sprite(_asset("botao_facil.png"))
+    botao_dif_medio =  PPlay.sprite.Sprite(_asset("botao_medio.png"))
+    botao_dif_dificil = PPlay.sprite.Sprite(_asset("botao_dificil.png"))
