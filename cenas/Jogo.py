@@ -38,11 +38,13 @@ class Obstaculo(sprite.Sprite):
         self.x -= self.velocidade * dt
 obstaculos = ObjectGroup()
 
+
 class Jogo(scenemanager.Scene):
-    def __init__(self, janela, rato):
+    def __init__(self, janela, rato, dificuldade):
         super().__init__()
         self.janela = janela
         self.rato = rato
+        self.dificuldade = dificuldade
         self.fundo1 = sprite.Sprite("assets/fundo.png")
         self.fundo2 = sprite.Sprite("assets/fundo.png")
         self.fundo1.set_position(0, 0)
@@ -54,16 +56,23 @@ class Jogo(scenemanager.Scene):
         for tir in list(tiro.get_all()):
             tiro.remove(tir)
 
+
         self.motor = Physics(gravidade=1800)
         assets.cowboy.setup_physics(self.motor)
-
+        
+        self.cora = sprite.Sprite("assets/coracoes.png",3)
+        self.cora.set_curr_frame(0)
+        self.cora.set_position(self.janela.width - 170, 0)
+        self.cora_curr_frame = 0
+        
         cowboy_x = 20
         cowboy_y = self.janela.height - assets.cowboy.height - 50
         self.tiro_y = 0
 
+        self.cowboy_armado = sprite.Sprite("assets/arma.png")
+        
         assets.cowboy.set_position(cowboy_x, cowboy_y)
-        self.cowboy_armado = sprite.Sprite("assets/armado.png")
-        self.cowboy_armado.set_position(cowboy_x, cowboy_y)
+        
 
 
         assets.chao.set_position(0, cowboy_y + assets.cowboy.height)
@@ -82,7 +91,9 @@ class Jogo(scenemanager.Scene):
         self.str_score = ""
 
     def loop(self):
+        self.cowboy_armado.set_position(assets.cowboy.x+25, assets.cowboy.y+40)
         from cenas.Menu import Menu
+        from cenas.rank_escrita import rnk_cria
         dt = self.janela.delta_time()
         self.score += dt * self.ponto_base
         self.str_score = str(int(self.score))
@@ -98,15 +109,16 @@ class Jogo(scenemanager.Scene):
         if self.janela.keyboard.key_pressed('ESC'):
             scenemanager.SceneManager.change_scene(Menu(self.janela, self.rato))
             return
-
-        if (self.janela.keyboard.key_pressed('SPACE')) and (assets.cowboy.y == self.janela.height - assets.cowboy.height - 50):
+        assets.cowboy.set_total_duration(100000000000000)
+        if (self.janela.keyboard.key_pressed('SPACE')) and (assets.cowboy.y == self.janela.height - assets.cowboy.height - 50):  
             assets.cowboy.pular(2200)
-
+        if assets.cowboy.y > 400:
+            assets.cowboy.set_total_duration(500)
         self.tiro_y = assets.cowboy.y + assets.cowboy.height *0.3
 
         if time.time() - self.ultimo_spawn > self.intervalo_spawn:
             escolha = random.choices(["cacto", "cacto2", "inimigo", "arma"], weights = [8, 8, 3, 1], k=1)[0]
-            obstaculos.add(Obstaculo(f"assets/{escolha}.png", 850, self.janela.height - assets.cowboy.height - 21, 300, escolha))
+            obstaculos.add(Obstaculo(f"assets/{escolha}.png", 850, self.janela.height - assets.cowboy.height - 21, 300+(self.dificuldade/self.score), escolha))
             self.ultimo_spawn = time.time()
             self.intervalo_spawn = max(0.6, self.intervalo_spawn - 0.02)
 
@@ -123,15 +135,16 @@ class Jogo(scenemanager.Scene):
                     obstaculos.remove(obs)
                 if obs.tipo != "arma":
                     self.vida -= 1
+                    self.cora_curr_frame += 1
+                    self.cora.set_curr_frame(self.cora_curr_frame)
                     obstaculos.remove(obs)
 
         if self.vida == 0:
-            scenemanager.SceneManager.change_scene(Menu(self.janela, self.rato))
+            scenemanager.SceneManager.change_scene(rnk_cria(int(self.score), self.janela, self.rato))
             return
 
         assets.cowboy.update_physics(self.lista_solidos)
 
-        self.cowboy_armado.set_position(assets.cowboy.x, assets.cowboy.y)
 
         if abs(self.ultimo_powerup- time.time())>5:
             self.powerup_coletado = False
@@ -153,22 +166,21 @@ class Jogo(scenemanager.Scene):
                 continue
             for obs in obstaculos.get_all():
                 if tir.collided(obs):
-                    if obs.tipo == "inimigo" or obs.tipo == "arma":
+                    if obs.tipo == "inimigo":
                         obstaculos.remove(obs)
                         tiro.remove(tir)
-                    if obs.tipo != "inimigo" and obs.tipo != "arma":
+                    if obs.tipo != "inimigo":
                         tiro.remove(tir)
                     break
 
     def draw(self):
             self.fundo1.draw()
             self.fundo2.draw()
+            assets.cowboy.draw()
             if self.powerup_coletado:
                 self.cowboy_armado.draw()
-            else:
-                assets.cowboy.draw()
             obstaculos.draw()
             tiro.draw()
+            self.cora.draw()
             self.janela.draw_text(self.str_score, 0, 0, size = 36,color = (0,0,0), bold = True)
-            self.janela.draw_text(f"vidas = {str(self.vida)}", self.janela.width - 160, 0, size = 36,color = (0,0,0), bold = True)
 

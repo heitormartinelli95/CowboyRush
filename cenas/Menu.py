@@ -11,7 +11,8 @@ class Menu(scenemanager.Scene):
 
     def loop(self):
         from cenas.Jogo import Jogo
-
+        from cenas.dificuldade import Dif
+        from cenas.rank import Rnk
         if not self.pode_clicar:
             self.pode_clicar = True
             return
@@ -19,8 +20,13 @@ class Menu(scenemanager.Scene):
         if self.rato.is_over_object(assets.botao_sair) and self.rato.button_pressed(1):
             self.janela.close()
         if self.rato.is_over_object(assets.botao_jogar) and self.rato.button_pressed(1):
-            scenemanager.SceneManager.change_scene(Jogo(self.janela, self.rato))
-            return
+            self.dificuldade = 1
+            scenemanager.SceneManager.change_scene(Jogo(self.janela, self.rato, self.dificuldade))
+        if self.rato.is_over_object(assets.botao_dificuldade) and self.rato.button_pressed(1):
+             scenemanager.SceneManager.change_scene(Dif(self.janela, self.rato))
+        if self.rato.is_over_object(assets.botao_rank) and self.rato.button_pressed(1):
+                     scenemanager.SceneManager.change_scene(Rnk())
+                 
 
     def draw(self):
 
