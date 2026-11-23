@@ -139,9 +139,12 @@ class Jogo(scenemanager.Scene):
                     self.powerup_coletado = True
                     self.ultimo_powerup = time.time()
                     obstaculos.remove(obs)
-                if obs.tipo != "arma":
+                if obs.tipo != "inimigo" and obs.tipo != "arma":
                     self.vida -= 1
                     obstaculos.remove(obs)
+                if obs.tipo == "inimigo":
+                    self.vida = 0
+
 
         if self.vida == 0:
             scenemanager.SceneManager.change_scene(rnk_cria(int(self.score), self.janela, self.rato))
