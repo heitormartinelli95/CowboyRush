@@ -60,3 +60,10 @@ class rnk_cria(PPlay.scenemanager.Scene):
             size=20,
             color=(0, 0, 0),
         )
+        self.janela.draw_text(
+            "PERDEU COWBOY",
+            self.janela.width / 5 - 25,
+            50,
+            size = 80,
+            color = "BLACK"
+        )

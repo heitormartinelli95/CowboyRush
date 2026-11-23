@@ -7,6 +7,8 @@ from PPlay import mouse
 import time
 import random
 
+from assets import dificuldade
+
 
 def calc_equacao(x_origem, y_origem):
     rx,ry = mouse.Mouse.get_position(mouse.Mouse)
@@ -50,6 +52,7 @@ class Jogo(scenemanager.Scene):
         self.fundo1.set_position(0, 0)
         self.fundo2.set_position(self.fundo1.width, 0)
         self.velocidade_fundo = 100
+        self.velocidade_base = 250 + 75 * self.dificuldade
 
         for obs in list(obstaculos.get_all()):
             obstaculos.remove(obs)
@@ -85,11 +88,12 @@ class Jogo(scenemanager.Scene):
         self.ultimo_powerup = 0
         self.powerup_coletado = False
         self.ultimo_spawn = 0
+        self.intervalo_minimo = 1.5 - 0.25 * self.dificuldade
         self.intervalo_spawn = 2.5
 
 
         self.score = 0
-        self.ponto_base = 15
+        self.ponto_base = 15 * self.dificuldade
         self.str_score = ""
 
     def loop(self):
@@ -100,8 +104,8 @@ class Jogo(scenemanager.Scene):
         self.score += dt * self.ponto_base
         self.str_score = str(int(self.score))
 
-        self.fundo1.x -= (self.velocidade_fundo * dt)
-        self.fundo2.x -= (self.velocidade_fundo * dt)
+        self.fundo1.x -= (self.velocidade_fundo * dt) * self.dificuldade
+        self.fundo2.x -= (self.velocidade_fundo * dt) * self.dificuldade
 
         if self.fundo1.x <= -self.fundo1.width:
             self.fundo1.x = self.fundo2.x + self.fundo2.width
@@ -119,10 +123,10 @@ class Jogo(scenemanager.Scene):
         self.tiro_y = assets.cowboy.y + assets.cowboy.height *0.3
 
         if time.time() - self.ultimo_spawn > self.intervalo_spawn:
-            escolha = random.choices(["cacto", "cacto2", "inimigo", "arma"], weights = [8, 8, 3, 1], k=1)[0]
-            obstaculos.add(Obstaculo(f"assets/{escolha}.png", 850, self.janela.height - assets.cowboy.height - 21, 300+(self.dificuldade/self.score), escolha))
+            escolha = random.choices(["cacto", "cacto2", "inimigo", "arma"], weights = [8, 8, 4, 2], k=1)[0]
+            obstaculos.add(Obstaculo(f"assets/{escolha}.png", 850, self.janela.height - assets.cowboy.height - 21, (self.velocidade_base + self.score * 0.01), escolha))
             self.ultimo_spawn = time.time()
-            self.intervalo_spawn = max(0.8, self.intervalo_spawn - 0.05)
+            self.intervalo_spawn = max(self.intervalo_minimo, self.intervalo_spawn - 0.05)
 
         for obs in list(obstaculos.get_all()):
             obs.update(dt)
@@ -148,9 +152,9 @@ class Jogo(scenemanager.Scene):
 
         if abs(self.ultimo_powerup- time.time())>5:
             self.powerup_coletado = False
-            self.cooldown = 0.7
+            self.cooldown = 0.7 * self.dificuldade
         if self.powerup_coletado == True:
-            self.cooldown = 0.25
+            self.cooldown = 0.25 * self.dificuldade
 
         if self.rato.button_pressed(1) and abs(time.time() - self.ultimo_tiro) > self.cooldown:
             rx,ry = self.rato.get_position()
